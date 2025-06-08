@@ -271,9 +271,9 @@ class Kobra:
                 rpc_method = web_request.get_endpoint()
                 if self.is_goklipper_running() and rpc_method == "gcode/script":
                     script = web_request.get_str('script', "")
-                    if script.lower() == "bed_mesh_map" and os.path.isfile("/userdata/app/gk/printer_data/config/printer_mutable.cfg"):
+                    if script.lower() == "bed_mesh_map" and os.path.isfile("/home/printerpi/printer_data/config/printer_mutable.cfg"):
                         logging.info('[Kobra] Injected bed mesh')
-                        with open("/userdata/app/gk/printer_data/config/printer_mutable.cfg", "r") as f:
+                        with open("/home/printerpi/printer_data/config/printer_mutable.cfg", "r") as f:
                             config = json.load(f)
                             mesh = config.get("bed_mesh default")
                             if not mesh is None:
@@ -321,8 +321,8 @@ class Kobra:
                     result['status']['bed_mesh'] = {}
                     result['status']['bed_mesh \"default\"'] = {}
 
-                    if os.path.isfile("/userdata/app/gk/printer_data/config/printer_mutable.cfg"):
-                        with open('/userdata/app/gk/printer_data/config/printer_mutable.cfg', 'r') as f:
+                    if os.path.isfile("/home/printerpi/printer_data/config/printer_mutable.cfg"):
+                        with open('/home/printerpi/printer_data/config/printer_mutable.cfg', 'r') as f:
                             config = json.load(f)
                             mesh = config.get('bed_mesh default')
                             if not mesh is None:

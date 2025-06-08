@@ -20,11 +20,13 @@ Raspberry pi image with user setup as printerpi and password printerpi (or you'l
 
 
 ```bash
-scp lighttpd.conf printerpi@192.168.1.169:/home/printerpi/
-scp moonraker.conf printerpi@192.168.1.169:/home/printerpi/
-scp klipper-socket-local.service printerpi@192.168.1.169:/home/printerpi/
-scp klipper-socket-forward.service printerpi@192.168.1.169:/home/printerpi/
-scp moonraker.service printerpi@192.168.1.169:/home/printerpi/
+scp kobra.py printerpi:/home/printerpi/
+scp lighttpd.conf printerpi:/home/printerpi/
+scp moonraker.conf printerpi:/home/printerpi/
+scp klipper-fsmount.service printerpi:/home/printerpi/
+scp klipper-socket-local.service printerpi:/home/printerpi/
+scp klipper-socket-forward.service printerpi:/home/printerpi/
+scp moonraker.service printerpi:/home/printerpi/
 
 ```
 
@@ -72,16 +74,11 @@ cd ..
 python -m venv venv
 venv/bin/pip install -r moonraker/scripts/moonraker-requirements.txt
 
-
+mkdir -p /home/printerpi/printer_data
 
 # Copy and link the lighttpd config file
 sudo ln -s /home/printerpi/lighttpd.conf /etc/lighttpd/lighttpd.conf
 sudo systemctl restart lighttpd
-
-
-# create the directory structure found on the Kobra
-sudo mkdir -p /userdata/app/gk/printer_data
-sudo chown -R printerpi:printerpi /userdata/
 
 
 # Klipper tunnel service
@@ -106,9 +103,12 @@ sudo systemctl start klipper-fsmount.service
 # moonraker setup
 ln -s /home/printerpi/kobra.py /home/printerpi/moonraker/moonraker/components/kobra.py
 
-ln -s /home/printerpi/mounted_printer_data/config/printer_mutable.cfg /userdata/app/gk/printer_data/config/
-ln -s /home/printerpi/mounted_printer_data/config/printer.custom.cfg /userdata/app/gk/printer_data/config/
-ln -s /home/printerpi/mounted_printer_data/config/printer.generated.cfg /userdata/app/gk/printer_data/config/
+mkdir -p /home/printerpi/printer_data/config
+mv /home/printerpi/moonraker.conf /home/printerpi/printer_data/moonraker.conf
+ln -s /home/printerpi/mounted_printer_data/config/printer_mutable.cfg /home/printerpi/printer_data/config/
+ln -s /home/printerpi/mounted_printer_data/config/printer.custom.cfg /home/printerpi/printer_data/config/
+ln -s /home/printerpi/mounted_printer_data/config/printer.generated.cfg /home/printerpi/printer_data/config/
+
 
 sudo ln -s /home/printerpi/moonraker.service /etc/systemd/system/moonraker.service
 sudo systemctl daemon-reload

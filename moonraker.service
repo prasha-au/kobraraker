@@ -9,7 +9,7 @@ Group=printerpi
 Restart=always
 RestartSec=10
 WorkingDirectory=/home/printerpi
-ExecStart=/home/printerpi/venv/bin/python /home/printerpi/moonraker/moonraker/moonraker.py -d /userdata/app/gk/printer_data
+ExecStart=/home/printerpi/venv/bin/python /home/printerpi/moonraker/moonraker/moonraker.py -d /home/printerpi/printer_data
 
 [Install]
 WantedBy=multi-user.target
