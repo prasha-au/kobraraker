@@ -1,0 +1,16 @@
+[Unit]
+Description=Create Local Klipper Socket from SSH Tunnel
+After=network.target
+
+[Service]
+User=printerpi
+Group=printerpi
+
+ExecStartPre=/bin/rm -f /home/printerpi/klipper.sock
+ExecStart=socat UNIX-LISTEN:/home/printerpi/klipper.sock,fork,reuseaddr,unlink-early TCP:localhost:7126
+
+Restart=always
+RestartSec=1
+
+[Install]
+WantedBy=klipper-socket-forward.service

@@ -1,0 +1,21 @@
+[Unit]
+Description=SSHFS Mounts for Printer Data
+Requires=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+Restart=on-failure
+RestartSec=5
+User=printerpi
+Group=printerpi
+
+ExecStart=/bin/sh -c "mountpoint -q /userdata/app/gk/printer_data/gcodes || echo 'rockchip' | sshfs -o password_stdin,reconnect,ServerAliveInterval=15,ServerAliveCountMax=3 root@192.168.1.47:/useremain/app/gk/gcodes/ /userdata/app/gk/printer_data/gcodes"
+ExecStart=/bin/sh -c "mountpoint -q /home/printerpi/mounted_printer_data || echo 'rockchip' | sshfs -o password_stdin,reconnect,ServerAliveInterval=15,ServerAliveCountMax=3 root@192.168.1.47:/userdata/app/gk/printer_data /home/printerpi/mounted_printer_data"
+
+ExecStop=/bin/sh -c "mountpoint -q /userdata/app/gk/printer_data/gcodes && umount /userdata/app/gk/printer_data/gcodes"
+ExecStop=/bin/sh -c "mountpoint -q /home/printerpi/mounted_printer_data && umount /home/printerpi/mounted_printer_data"
+
+[Install]
+WantedBy=multi-user.target
