@@ -19,36 +19,12 @@ def shell(command):
 
 
 class Kobra:
-    # Environment
-    KOBRA_MODEL_ID = None
-    KOBRA_MODEL_CODE = None
-    KOBRA_DEVICE_ID = None
-    MQTT_USERNAME = None
-    MQTT_PASSWORD = None
 
-    # MQTT states
-    mqtt_print_report = False
-    mqtt_print_error = None
-
-    # Cache
-    _goklipper_next_check = 0
-    _goklipper_pid = None
-    _remote_mode_next_check = 0
-    _remote_mode = None
     _total_layer = 0
 
     def __init__(self, config):
         self.server = config.get_server()
         self.power = self.server.load_component(self.server.config, 'power')
-
-        # Extract environment values from the printer
-        try:
-            self.KOBRA_MODEL_ID = '20021' #environment['KOBRA_MODEL_ID']
-            self.KOBRA_MODEL_CODE = 'K2P' #environment['KOBRA_MODEL_CODE']
-            self.KOBRA_DEVICE_ID = '' #environment['KOBRA_DEVICE_ID']
-
-        except:
-            pass
 
         # Monkey patch Moonraker for Kobra
         logging.info('Starting Kobra patching...')
@@ -67,22 +43,8 @@ class Kobra:
 
         logging.info('Completed Kobra patching! Yay!')
 
-        # Trigger LAN mode warning if needed
-        self.get_remote_mode()
-
     async def component_init(self):
       pass
-
-
-    def is_goklipper_running(self):
-        return True
-
-    def get_remote_mode(self):
-        return self._remote_mode
-
-    def is_using_mqtt(self):
-        return False
-
 
     def patch_file_manager(self):
         from .file_manager.file_manager import FileManager
@@ -129,54 +91,53 @@ class Kobra:
 
 
     def patch_status(self, status):
-        if self.is_goklipper_running():
-            if 'print_stats' in status:
-                if 'state' in status['print_stats']:
-                    # Convert Kobra state
-                    state = status['print_stats']['state']
-                    logging.info(f'[Kobra] Converted Kobra state {state}')
+        if 'print_stats' in status:
+            if 'state' in status['print_stats']:
+                # Convert Kobra state
+                state = status['print_stats']['state']
+                logging.info(f'[Kobra] Converted Kobra state {state}')
 
-                    if state.lower() == 'heating':
-                        state = 'printing'
-                    if state.lower() == 'leveling':
-                        state = 'printing'
-                    if state.lower() == 'resonance':
-                        state = 'printing'
-                    if state.lower() == 'onpause':
-                        state = 'paused'
+                if state.lower() == 'heating':
+                    state = 'printing'
+                if state.lower() == 'leveling':
+                    state = 'printing'
+                if state.lower() == 'resonance':
+                    state = 'printing'
+                if state.lower() == 'onpause':
+                    state = 'paused'
 
-                    status['print_stats']['state'] = state
+                status['print_stats']['state'] = state
 
-                    # Inject in 'idle_timeout' for Fluidd
-                    if 'idle_timeout' not in status:
-                        status['idle_timeout'] = {}
+                # Inject in 'idle_timeout' for Fluidd
+                if 'idle_timeout' not in status:
+                    status['idle_timeout'] = {}
 
-                    status['idle_timeout']['state'] = state
+                status['idle_timeout']['state'] = state
 
-                if 'filename' in status['print_stats']:
-                    # Remove path prefix from filename
-                    status['print_stats']['filename'] = status['print_stats']['filename'].replace('/useremain/app/gk/gcodes/', '')
+            if 'filename' in status['print_stats']:
+                # Remove path prefix from filename
+                status['print_stats']['filename'] = status['print_stats']['filename'].replace('/useremain/app/gk/gcodes/', '')
 
-            if 'virtual_sdcard' in status:
-                if 'total_layer' in status['virtual_sdcard']:
-                    # Save layer count for later
-                    self._total_layer = status['virtual_sdcard']['total_layer']
+        if 'virtual_sdcard' in status:
+            if 'total_layer' in status['virtual_sdcard']:
+                # Save layer count for later
+                self._total_layer = status['virtual_sdcard']['total_layer']
 
-                if 'current_layer' in status['virtual_sdcard']:
-                    current_layer = status['virtual_sdcard']['current_layer']
+            if 'current_layer' in status['virtual_sdcard']:
+                current_layer = status['virtual_sdcard']['current_layer']
 
-                    # Inject current and total layer count in 'info' for Mainsail / Fluidd
-                    if 'print_stats' not in status:
-                        status['print_stats'] = {}
-                    if 'info' not in status['print_stats']:
-                        status['print_stats']['info'] = {}
+                # Inject current and total layer count in 'info' for Mainsail / Fluidd
+                if 'print_stats' not in status:
+                    status['print_stats'] = {}
+                if 'info' not in status['print_stats']:
+                    status['print_stats']['info'] = {}
 
-                    status['print_stats']['info']['current_layer'] = current_layer
-                    status['print_stats']['info']['total_layer'] = self._total_layer
+                status['print_stats']['info']['current_layer'] = current_layer
+                status['print_stats']['info']['total_layer'] = self._total_layer
 
-                if 'file_path' in status['virtual_sdcard']:
-                    # Remove path prefix from file path
-                    status['virtual_sdcard']['file_path'] = status['virtual_sdcard']['file_path'].replace('/useremain/app/gk/gcodes/', '')
+            if 'file_path' in status['virtual_sdcard']:
+                # Remove path prefix from file path
+                status['virtual_sdcard']['file_path'] = status['virtual_sdcard']['file_path'].replace('/useremain/app/gk/gcodes/', '')
 
         return status
 
@@ -270,9 +231,8 @@ class Kobra:
         def wrap_get_klippy_info(original_get_klippy_info):
             def get_klippy_info(me):
                 result = original_get_klippy_info(me)
-                if self.is_goklipper_running():
-                    result['klipper_path'] = '/opt'
-                    logging.info('[Kobra] Injected klipper_path')
+                result['klipper_path'] = '/opt'
+                logging.info('[Kobra] Injected klipper_path')
                 return result
             return get_klippy_info
 
@@ -287,7 +247,7 @@ class Kobra:
 
         def wrap_run_gcode(original_run_gcode):
             async def run_gcode(me, script, default = Sentinel.MISSING):
-                if self.is_goklipper_running() and script.startswith('SDCARD_PRINT_FILE'):
+                if script.startswith('SDCARD_PRINT_FILE'):
                     self._total_layer = 0
                     filename = re.search("FILENAME=\"([^\"]+)\"$", script)
                     filename = filename[1] if filename else None
@@ -306,7 +266,7 @@ class Kobra:
         def wrap_request(original_request):
             async def request(me, web_request):
                 rpc_method = web_request.get_endpoint()
-                if self.is_goklipper_running() and rpc_method == "gcode/script":
+                if rpc_method == "gcode/script":
                     script = web_request.get_str('script', "")
                     if script.lower() == "bed_mesh_map" and os.path.isfile("/home/printerpi/printer_data/config/printer_mutable.cfg"):
                         logging.info('[Kobra] Injected bed mesh')
@@ -340,13 +300,12 @@ class Kobra:
 
                 # Do not send bed_mesh to goklipper, it does not support it
                 want_bed_mesh = False
-                if self.is_goklipper_running():
-                    if 'objects' in args and 'bed_mesh' in args['objects']:
-                        want_bed_mesh = True
-                        del args['objects']['bed_mesh']
-                    if 'objects' in args and 'bed_mesh \"default\"' in args['objects']:
-                        want_bed_mesh = True
-                        del args['objects']['bed_mesh \"default\"']
+                if 'objects' in args and 'bed_mesh' in args['objects']:
+                    want_bed_mesh = True
+                    del args['objects']['bed_mesh']
+                if 'objects' in args and 'bed_mesh \"default\"' in args['objects']:
+                    want_bed_mesh = True
+                    del args['objects']['bed_mesh \"default\"']
 
                 result = await original__request_standard(me, web_request, timeout)
 
@@ -406,7 +365,7 @@ class Kobra:
         def wrap_request(original_request):
             async def request(me, web_request):
                 rpc_method = web_request.get_endpoint()
-                if self.is_goklipper_running() and rpc_method == "objects/list":
+                if rpc_method == "objects/list":
                     logging.info('[Kobra] Injected objects list')
                     return {
                         "objects": [
@@ -457,7 +416,7 @@ class Kobra:
         def wrap__request_standard(original__request_standard):
             async def _request_standard(me, web_request, timeout = None):
                 result = await original__request_standard(me, web_request, timeout)
-                if self.is_goklipper_running() and 'status' in result and 'configfile' in result['status'] and 'config' in result['status']['configfile']:
+                if 'status' in result and 'configfile' in result['status'] and 'config' in result['status']['configfile']:
                     logging.info('[Kobra] Injected Mainsail macros')
                     result['status']['configfile']['config']['gcode_macro pause'] = {}
                     result['status']['configfile']['config']['gcode_macro resume'] = {}
@@ -477,10 +436,9 @@ class Kobra:
         def wrap_get_klippy_info(original_get_klippy_info):
             async def get_klippy_info(me, send_id, default = Sentinel.MISSING):
                 result = await original_get_klippy_info(me)
-                if self.is_goklipper_running():
-                    result['klipper_path'] = '/opt'
-                    result['python_path'] = ''
-                    logging.info('[Kobra] Injected missing paths')
+                result['klipper_path'] = '/opt'
+                result['python_path'] = ''
+                logging.info('[Kobra] Injected missing paths')
                 return result
             return get_klippy_info
 
