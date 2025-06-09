@@ -3,9 +3,6 @@ import json
 import re
 import logging
 import subprocess
-import paho.mqtt.client as paho
-import shutil
-import asyncio
 
 from ..utils import Sentinel
 from .power import PowerDevice
