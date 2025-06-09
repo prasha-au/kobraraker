@@ -20,16 +20,12 @@ Raspberry pi image with user setup as printerpi and password printerpi (or you'l
 
 
 ```bash
-scp kobra.py printerpi:/home/printerpi/
-scp lighttpd.conf printerpi:/home/printerpi/
-scp moonraker.conf printerpi:/home/printerpi/
 scp sshconfig printerpi:/home/printerpi/.ssh/config
 scp printer-sshcontrol.service printerpi:/home/printerpi/
 scp klipper-fsmount.service printerpi:/home/printerpi/
 scp klipper-socket-local.service printerpi:/home/printerpi/
 scp klipper-socket-forward.service printerpi:/home/printerpi/
 scp moonraker.service printerpi:/home/printerpi/
-
 ```
 
 
@@ -79,7 +75,7 @@ venv/bin/pip install -r moonraker/scripts/moonraker-requirements.txt
 mkdir -p /home/printerpi/printer_data
 
 # Copy and link the lighttpd config file
-sudo ln -s /home/printerpi/lighttpd.conf /etc/lighttpd/lighttpd.conf
+sudo ln -s /home/printerpi/printer_data/config/lighttpd.conf /etc/lighttpd/lighttpd.conf
 sudo systemctl restart lighttpd
 
 
@@ -122,6 +118,13 @@ sudo systemctl start moonraker.service
 
 ```
 
+
+```bash
+scp kobra.py printerpi:/home/printerpi/moonraker/moonraker/components/kobra.py
+scp file_manager.py printerpi:/home/printerpi/moonraker/moonraker/components/file_manager/file_manager.py
+scp moonraker.conf printerpi:/home/printerpi/printer_data/config/moonraker.conf
+scp lighttpd.conf printerpi:/home/printerpi//printer_data/config/lighttpd.conf
+```
 
 
 ## References

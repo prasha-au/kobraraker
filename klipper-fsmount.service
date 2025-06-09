@@ -1,6 +1,5 @@
 [Unit]
 Description=SSHFS Mounts for Printer Data
-Requires=printer-sshcontrol.service
 After=printer-sshcontrol.service
 
 [Service]
@@ -9,6 +8,8 @@ RemainAfterExit=yes
 
 User=printerpi
 Group=printerpi
+
+ExecStartPre=ssh -O check printer
 
 ExecStart=/bin/sh -c "mountpoint -q /home/printerpi/printer_data/gcodes || sshfs -o reconnect,ConnectTimeout=2 printer:/useremain/app/gk/gcodes/ /home/printerpi/printer_data/gcodes"
 ExecStart=/bin/sh -c "mountpoint -q /home/printerpi/mounted_printer_data || sshfs -o reconnect,ConnectTimeout=2 printer:/userdata/app/gk/printer_data /home/printerpi/mounted_printer_data"
