@@ -1,18 +1,14 @@
 [Unit]
 Description=SSH Tunnel and Remote Socat for Klipper
-Wants=network-online.target
-After=network-online.target
+Requires=printer-sshcontrol.service
+After=printer-sshcontrol.service
 
 [Service]
 User=printerpi
 Group=printerpi
 
-# -tt: Forces terminal allocation for clean SIGHUP on exit.
-# -o ServerAlive...: Keeps the connection from timing out.
-# remote socat (no fork): Exits cleanly when the SSH connection drops.
-ExecStart=sshpass -p "rockchip" ssh -tt -o ServerAliveInterval=30 -o ServerAliveCountMax=3 -o ExitOnForwardFailure=yes -L 7126:localhost:7126 root@192.168.1.47 "socat TCP-LISTEN:7126,reuseaddr UNIX-CONNECT:/tmp/unix_uds1"
+ExecStart=ssh -o ExitOnForwardFailure=yes -L 7126:localhost:7126 printer "socat TCP-LISTEN:7126,reuseaddr UNIX-CONNECT:/tmp/unix_uds1"
 
-# Restart this service if it ever fails
 Restart=always
 RestartSec=5
 

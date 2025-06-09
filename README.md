@@ -23,6 +23,8 @@ Raspberry pi image with user setup as printerpi and password printerpi (or you'l
 scp kobra.py printerpi:/home/printerpi/
 scp lighttpd.conf printerpi:/home/printerpi/
 scp moonraker.conf printerpi:/home/printerpi/
+scp sshconfig printerpi:/home/printerpi/.ssh/config
+scp printer-sshcontrol.service printerpi:/home/printerpi/
 scp klipper-fsmount.service printerpi:/home/printerpi/
 scp klipper-socket-local.service printerpi:/home/printerpi/
 scp klipper-socket-forward.service printerpi:/home/printerpi/
@@ -87,12 +89,15 @@ sudo systemctl daemon-reload
 sudo systemctl enable klipper-socket-local.service
 sudo systemctl start klipper-socket-local.service
 
+sudo ln -s /home/printerpi/printer-sshcontrol.service /etc/systemd/system/printer-sshcontrol.service
+sudo systemctl daemon-reload
+sudo systemctl enable printer-sshcontrol.service
+sudo systemctl start printer-sshcontrol.service
+
 sudo ln -s /home/printerpi/klipper-socket-forward.service /etc/systemd/system/klipper-socket-forward.service
 sudo systemctl daemon-reload
 sudo systemctl enable klipper-socket-forward.service
 sudo systemctl start klipper-socket-forward.service
-
-
 
 sudo ln -s /home/printerpi/klipper-fsmount.service /etc/systemd/system/klipper-fsmount.service
 sudo systemctl daemon-reload
