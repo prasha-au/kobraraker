@@ -1,12 +1,11 @@
 import os
-import uuid
 import json
 import re
-import time
 import logging
 import subprocess
 import paho.mqtt.client as paho
-import shlex
+import shutil
+import asyncio
 
 from ..utils import Sentinel
 from .power import PowerDevice
@@ -63,6 +62,7 @@ class Kobra:
         self.patch_objects_list()
         self.patch_mainsail()
         self.patch_k2p_bug()
+        self.patch_file_manager()
 
 
         logging.info('Completed Kobra patching! Yay!')
@@ -84,15 +84,52 @@ class Kobra:
         return False
 
 
+    def patch_file_manager(self):
+        from .file_manager.file_manager import FileManager
+
+        # This is the original function but we make the shutil.move async
+        def wrap__process_uploaded_file(original_fn):
+            async def _process_uploaded_file(me, upload_info):
+                try:
+                    if upload_info['dir_path']:
+                        cur_path = me.file_paths[upload_info['root']]
+                        dirs = upload_info['dir_path'].strip('/').split('/')
+                        for subdir in dirs:
+                            cur_path = os.path.join(cur_path, subdir)
+                            if os.path.exists(cur_path):
+                                continue
+                            os.mkdir(cur_path)
+                            await asyncio.sleep(.1)
+                    if upload_info['unzip_ufp']:
+                        tmp_path = upload_info['tmp_file_path']
+                        finfo = me.get_path_info(tmp_path, upload_info['root'])
+                        finfo['ufp_path'] = tmp_path
+                    else:
+                        dest_path = upload_info['dest_path']
+                        if upload_info["is_link"]:
+                            dest_path = os.path.realpath(dest_path)
+                        await me.server.get_event_loop().run_in_thread(
+                            shutil.move, upload_info['tmp_file_path'], dest_path)
+
+                        finfo = me.get_path_info(upload_info['dest_path'],
+                                                upload_info['root'])
+                except Exception:
+                    logging.exception("Upload Write Error")
+                    raise self.server.error("Unable to save file", 500)
+                return finfo
+            return _process_uploaded_file
+
+
+        logging.info('> Patching file manager...')
+
+        logging.debug(f'  Before: {FileManager._process_uploaded_file}')
+        setattr(FileManager, '_process_uploaded_file', wrap__process_uploaded_file(FileManager._process_uploaded_file))
+        logging.debug(f'  After: {FileManager._process_uploaded_file}')
 
 
 
     def patch_status(self, status):
         if self.is_goklipper_running():
-
-            print('dump status')
-            print(status)
-
             if 'print_stats' in status:
                 if 'state' in status['print_stats']:
                     # Convert Kobra state
