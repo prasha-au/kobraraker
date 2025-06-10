@@ -1,0 +1,16 @@
+[Unit]
+Description=SSH ControlMaster Connection to printer
+Requires=network-online.target
+After=network-online.target
+
+[Service]
+User=printerpi
+Group=printerpi
+
+ExecStart=sshpass -p rockchip ssh -N printer
+
+Restart=always
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target

@@ -1,21 +1,24 @@
 [Unit]
 Description=SSHFS Mounts for Printer Data
-Requires=network-online.target
-After=network-online.target
+After=printer-sshcontrol.service
 
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-Restart=on-failure
-RestartSec=5
+
 User=printerpi
 Group=printerpi
 
-ExecStart=/bin/sh -c "mountpoint -q /home/printerpi/printer_data/gcodes || echo 'rockchip' | sshfs -o password_stdin,reconnect,ServerAliveInterval=15,ServerAliveCountMax=3,ConnectTimeout=2 root@192.168.1.47:/useremain/app/gk/gcodes/ /home/printerpi/printer_data/gcodes"
-ExecStart=/bin/sh -c "mountpoint -q /home/printerpi/mounted_printer_data || echo 'rockchip' | sshfs -o password_stdin,reconnect,ServerAliveInterval=15,ServerAliveCountMax=3,ConnectTimeout=2 root@192.168.1.47:/userdata/app/gk/printer_data /home/printerpi/mounted_printer_data"
+ExecStartPre=ssh -O check printer
 
-ExecStop=/bin/sh -c "mountpoint -q /home/printerpi/printer_data/gcodes && umount /userdata/app/gk/printer_data/gcodes"
-ExecStop=/bin/sh -c "mountpoint -q /home/printerpi/mounted_printer_data && umount /home/printerpi/mounted_printer_data"
+ExecStart=/bin/sh -c "mountpoint -q /home/printerpi/printer_data/gcodes || sshfs -o reconnect,ConnectTimeout=2 printer:/useremain/app/gk/gcodes/ /home/printerpi/printer_data/gcodes"
+ExecStart=/bin/sh -c "mountpoint -q /home/printerpi/mounted_printer_data || sshfs -o reconnect,ConnectTimeout=2 printer:/userdata/app/gk/printer_data /home/printerpi/mounted_printer_data"
+
+ExecStop=/bin/sh -c "mountpoint -q /home/printerpi/printer_data/gcodes && fusermount -u /userdata/app/gk/printer_data/gcodes"
+ExecStop=/bin/sh -c "mountpoint -q /home/printerpi/mounted_printer_data && fusermount -u /home/printerpi/mounted_printer_data"
+
+Restart=on-failure
+RestartSec=5
 
 [Install]
 WantedBy=multi-user.target
