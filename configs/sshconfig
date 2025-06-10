@@ -1,0 +1,13 @@
+Host printer
+  HostName 192.168.1.47
+  Port 22
+  User root
+  StrictHostKeyChecking no
+  Ciphers chacha20-poly1305@openssh.com
+  Compression no
+  ConnectTimeout 5
+  ServerAliveInterval 5
+  ServerAliveCountMax 3
+  ControlMaster auto
+  ControlPath ~/printer_data/run/cached_printer_socket-%r
+  ControlPersist no

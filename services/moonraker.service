@@ -1,0 +1,15 @@
+[Unit]
+Description=Moonraker API for Klipper
+After=network.target klipper-socket-local.service klipper-fsmount.service
+
+[Service]
+Type=simple
+User=printerpi
+Group=printerpi
+Restart=always
+RestartSec=10
+WorkingDirectory=/home/printerpi
+ExecStart=/home/printerpi/venv/bin/python /home/printerpi/moonraker/moonraker/moonraker.py -d /home/printerpi/printer_data
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,24 @@
+[Unit]
+Description=SSHFS Mounts for Printer Data
+After=printer-sshcontrol.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+
+User=printerpi
+Group=printerpi
+
+ExecStartPre=ssh -O check printer
+
+ExecStart=/bin/sh -c "mountpoint -q /home/printerpi/printer_data/gcodes || sshfs -o reconnect,ConnectTimeout=2 printer:/useremain/app/gk/gcodes/ /home/printerpi/printer_data/gcodes"
+ExecStart=/bin/sh -c "mountpoint -q /home/printerpi/mounted_printer_data || sshfs -o reconnect,ConnectTimeout=2 printer:/userdata/app/gk/printer_data /home/printerpi/mounted_printer_data"
+
+ExecStop=/bin/sh -c "mountpoint -q /home/printerpi/printer_data/gcodes && fusermount -u /userdata/app/gk/printer_data/gcodes"
+ExecStop=/bin/sh -c "mountpoint -q /home/printerpi/mounted_printer_data && fusermount -u /home/printerpi/mounted_printer_data"
+
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
