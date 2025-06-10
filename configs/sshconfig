@@ -9,5 +9,5 @@ Host printer
   ServerAliveInterval 5
   ServerAliveCountMax 3
   ControlMaster auto
-  ControlPath ~/cached_printer_socket-%r
+  ControlPath ~/printer_data/run/cached_printer_socket-%r
   ControlPersist no

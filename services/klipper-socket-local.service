@@ -6,8 +6,8 @@ After=network.target
 User=printerpi
 Group=printerpi
 
-ExecStartPre=/bin/rm -f /home/printerpi/klipper.sock
-ExecStart=socat UNIX-LISTEN:/home/printerpi/klipper.sock,fork,reuseaddr,unlink-early TCP:localhost:7126
+ExecStartPre=/bin/rm -f /home/printerpi/printer_data/run/klipper.sock
+ExecStart=socat UNIX-LISTEN:/home/printerpi/printer_data/run/klipper.sock,fork,reuseaddr,unlink-early TCP:localhost:7126
 
 Restart=always
 RestartSec=1

@@ -16,18 +16,7 @@ The main motivation for this is to avoid overloading the print harder causing MC
 
 ## Setup
 
-Raspberry pi image with user setup as printerpi and password printerpi (or you'll have to search/replace). A lot of the code here is hard coded for now and you'll have to search through files and change the printer IP address.
-
-
-```bash
-scp sshconfig printerpi:/home/printerpi/.ssh/config
-scp printer-sshcontrol.service printerpi:/home/printerpi/
-scp klipper-fsmount.service printerpi:/home/printerpi/
-scp klipper-socket-local.service printerpi:/home/printerpi/
-scp klipper-socket-forward.service printerpi:/home/printerpi/
-scp moonraker.service printerpi:/home/printerpi/
-```
-
+Create a Raspberry Pi image with user setup as printerpi and password printerpi. A lot of the code here is hard coded for now and you'll have to search through files and change things if not.
 
 ```bash
 
@@ -62,6 +51,17 @@ sudo apt-get install -y \
       sshpass
 
 
+# Clone this project into $HOME
+git clone https://github.com/prasha-au/kobraraker.git
+
+# Copy config files - they won't be versioned from here on out
+mkdir -p $HOME/printer_data/config $HOME/printer_data/run
+cp $HOME/kobraraker/configs/* $HOME/printer_data/config/
+
+# Link some config files out
+ln -s $HOME/kobraraker/printer_data/config/sshconfig $HOME/.ssh/config
+ln -s $HOME/kobraraker/printer_data/config/lighttpd.conf /etc/lighttpd/lighttpd.conf
+
 
 # Moonraker setup
 git clone https://github.com/Arksine/moonraker moonraker
@@ -72,58 +72,26 @@ cd ..
 python -m venv venv
 venv/bin/pip install -r moonraker/scripts/moonraker-requirements.txt
 
-mkdir -p /home/printerpi/printer_data
-
-# Copy and link the lighttpd config file
-sudo ln -s /home/printerpi/printer_data/config/lighttpd.conf /etc/lighttpd/lighttpd.conf
-sudo systemctl restart lighttpd
+# Moonraker overrides
+cp $HOME/kobraraker/moonraker/file_manager.py $HOME/moonraker/moonraker/components/file_manager/file_manager.py
+cp $HOME/kobraraker/moonraker/kobra.py $HOME/moonraker/moonraker/components/kobra.py
 
 
-# Klipper tunnel service
-sudo ln -s /home/printerpi/klipper-socket-local.service /etc/systemd/system/klipper-socket-local.service
-sudo systemctl daemon-reload
-sudo systemctl enable klipper-socket-local.service
-sudo systemctl start klipper-socket-local.service
-
-sudo ln -s /home/printerpi/printer-sshcontrol.service /etc/systemd/system/printer-sshcontrol.service
-sudo systemctl daemon-reload
-sudo systemctl enable printer-sshcontrol.service
-sudo systemctl start printer-sshcontrol.service
-
-sudo ln -s /home/printerpi/klipper-socket-forward.service /etc/systemd/system/klipper-socket-forward.service
-sudo systemctl daemon-reload
-sudo systemctl enable klipper-socket-forward.service
-sudo systemctl start klipper-socket-forward.service
-
-sudo ln -s /home/printerpi/klipper-fsmount.service /etc/systemd/system/klipper-fsmount.service
-sudo systemctl daemon-reload
-sudo systemctl enable klipper-fsmount.service
-sudo systemctl start klipper-fsmount.service
+# Link and enable services
+sudo systemctl enable $HOME/kobraraker/services/printer-sshcontrol.service
+sudo systemctl enable $HOME/kobraraker/services/klipper-socket-local.service
+sudo systemctl enable $HOME/kobraraker/services/klipper-socket-forward.service
+sudo systemctl enable $HOME/kobraraker/services/klipper-fsmount.service
+sudo systemctl enable $HOME/kobraraker/services/moonraker.service
 
 
-# moonraker setup
-ln -s /home/printerpi/kobra.py /home/printerpi/moonraker/moonraker/components/kobra.py
-
-mkdir -p /home/printerpi/printer_data/config
-mv /home/printerpi/moonraker.conf /home/printerpi/printer_data/moonraker.conf
+# Link in printer config files
 ln -s /home/printerpi/mounted_printer_data/config/printer_mutable.cfg /home/printerpi/printer_data/config/
 ln -s /home/printerpi/mounted_printer_data/config/printer.custom.cfg /home/printerpi/printer_data/config/
 ln -s /home/printerpi/mounted_printer_data/config/printer.generated.cfg /home/printerpi/printer_data/config/
 
-
-sudo ln -s /home/printerpi/moonraker.service /etc/systemd/system/moonraker.service
-sudo systemctl daemon-reload
-sudo systemctl enable moonraker.service
-sudo systemctl start moonraker.service
-
-```
-
-
-```bash
-scp kobra.py printerpi:/home/printerpi/moonraker/moonraker/components/kobra.py
-scp file_manager.py printerpi:/home/printerpi/moonraker/moonraker/components/file_manager/file_manager.py
-scp moonraker.conf printerpi:/home/printerpi/printer_data/config/moonraker.conf
-scp lighttpd.conf printerpi:/home/printerpi//printer_data/config/lighttpd.conf
+# Either reboot or start the services manually
+sudo reboot
 ```
 
 
