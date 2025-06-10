@@ -82,7 +82,7 @@ sudo systemctl enable $HOME/kobraraker/services/printer-sshcontrol.service
 sudo systemctl enable $HOME/kobraraker/services/klipper-socket-local.service
 sudo systemctl enable $HOME/kobraraker/services/klipper-socket-forward.service
 sudo systemctl enable $HOME/kobraraker/services/klipper-fsmount.service
-sudo systemctl enable $HOME/kobraraker/services/moonraker.serfvice
+sudo systemctl enable $HOME/kobraraker/services/moonraker.service
 
 
 # Link in printer config files
