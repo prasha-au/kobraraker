@@ -3,11 +3,11 @@ Description=SSH Tunnel and Remote Socat for Klipper
 After=printer-sshcontrol.service
 
 [Service]
-User=printerpi
-Group=printerpi
+User=radxa
+Group=radxa
 
 ExecStartPre=ssh -O check printer
-ExecStart=ssh -o ExitOnForwardFailure=yes -L 7126:localhost:7126 printer "socat TCP-LISTEN:7126,reuseaddr UNIX-CONNECT:/tmp/unix_uds1"
+ExecStart=ssh -v -o ExitOnForwardFailure=yes -L 7126:localhost:7126 printer "socat TCP-LISTEN:7126,reuseaddr UNIX-CONNECT:/tmp/unix_uds1"
 
 Restart=always
 RestartSec=5
