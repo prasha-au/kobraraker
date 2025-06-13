@@ -59,17 +59,17 @@ cp $HOME/kobraraker/moonraker/kobra.py $HOME/moonraker/moonraker/components/kobr
 rm /etc/systemd/system/moonraker.service;
 
 # Link and enable services
-sudo systemctl enable --now $HOME/kobraraker/services/printer-sshcontrol.service
+sudo systemctl enable --now $HOME/kobraraker/services/klipper-sshcontrol.service
 sudo systemctl enable --now $HOME/kobraraker/services/klipper-socket-local.service
-sudo systemctl enable --now $HOME/kobraraker/services/klipper-socket-forward.service
 sudo systemctl enable --now $HOME/kobraraker/services/klipper-fsmount.service
 sudo systemctl enable --now $HOME/kobraraker/services/moonraker.service
 
 
-# Link in printer config files
+# Link in printer config files and logs
 ln -s $HOME/mounted_printer_data/config/printer_mutable.cfg $HOME/printer_data/config/
 ln -s $HOME/mounted_printer_data/config/printer.custom.cfg $HOME/printer_data/config/
 ln -s $HOME/mounted_printer_data/config/printer.generated.cfg $HOME/printer_data/config/
+ln -s $HOME/mounted_logs $HOME/printer_data/logs/mounted_logs
 
 # Either reboot or start the services manually
 sudo reboot
