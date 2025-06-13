@@ -7,7 +7,7 @@ After=network-online.target
 User=radxa
 Group=radxa
 
-ExecStart=sshpass -p rockchip ssh -v -N printer
+ExecStart=sshpass -p rockchip ssh -v -N -L 7126:localhost:7126 printer
 
 Restart=always
 RestartSec=5s

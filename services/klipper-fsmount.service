@@ -1,6 +1,6 @@
 [Unit]
 Description=SSHFS Mounts for Printer Data
-After=printer-sshcontrol.service
+After=klipper-sshcontrol.service
 
 [Service]
 Type=oneshot
@@ -13,9 +13,11 @@ ExecStartPre=ssh -O check printer
 
 ExecStart=/bin/sh -c "mountpoint -q /home/radxa/printer_data/gcodes || sshfs -o reconnect,ConnectTimeout=2 printer:/useremain/app/gk/gcodes/ /home/radxa/printer_data/gcodes"
 ExecStart=/bin/sh -c "mountpoint -q /home/radxa/mounted_printer_data || sshfs -o reconnect,ConnectTimeout=2 printer:/userdata/app/gk/printer_data /home/radxa/mounted_printer_data"
+ExecStart=/bin/sh -c "mountpoint -q /home/radxa/mounted_logs || sshfs -o reconnect,ConnectTimeout=2 printer:/useremain/rinkhals/.current/logs /home/radxa/mounted_logs"
 
 ExecStop=/bin/sh -c "mountpoint -q /home/radxa/printer_data/gcodes && fusermount -u /userdata/app/gk/printer_data/gcodes"
 ExecStop=/bin/sh -c "mountpoint -q /home/radxa/mounted_printer_data && fusermount -u /home/radxa/mounted_printer_data"
+ExecStop=/bin/sh -c "mountpoint -q /home/radxa/mounted_logs && fusermount -u /home/radxa/mounted_logs"
 
 Restart=on-failure
 RestartSec=5
