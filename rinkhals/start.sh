@@ -101,14 +101,6 @@ if [ -f /mnt/udisk/printer.generated.cfg ]; then
 fi
 
 
-
-# Start time synchronization
-source /etc/profile
-
-chmod +x $RINKHALS_ROOT/ntpclient.sh
-$RINKHALS_ROOT/ntpclient.sh &
-
-
 ################
 log "> Restarting Anycubic apps..."
 
@@ -138,16 +130,7 @@ log "> Starting SSH..."
 if [ "$(get_by_port 22)" != "" ]; then
     log "/!\ SSH is already running"
 else
-
-    # Note this is require because the binaries have been built with /tmp/ssh as the path prefix since we just copied the ssh tools.
-    # See build\swu-tools\ssh\build-swu.sh in the Rinkhals repository.
-    SSH_TOOL_PATH="/tmp/ssh"
-
-    log "Hacking SSH bins to $SSH_TOOL_PATH"
-    mkdir -p $SSH_TOOL_PATH
-    cp $RINKHALS_ROOT/bin/* /tmp/ssh/
-
-    LD_LIBRARY_PATH=$SSH_TOOL_PATH $SSH_TOOL_PATH/dropbear -F -E -a -p 22 -P $RINKHALS_ROOT/dropbear.pid -r $SSH_TOOL_PATH/dropbear_rsa_host_key >> $RINKHALS_ROOT/logs/dropbear.log 2>&1 &
+    LD_LIBRARY_PATH=$RINKHALS_ROOT/bin $RINKHALS_ROOT/bin/dropbear -F -E -a -p 22 -P $RINKHALS_ROOT/dropbear.pid -r $RINKHALS_ROOT/bin/dropbear_rsa_host_key >> $RINKHALS_ROOT/logs/dropbear.log 2>&1 &
     wait_for_port 22 5000 "/!\ SSH did not start properly"
 fi
 

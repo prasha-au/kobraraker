@@ -9,7 +9,7 @@ Hack work to get Moonraker running on a secondary device linking to a KobraOS pr
 
 
 This forwards out the KlipperGo unix socket and parts of the file system over SSH to a secondary device. This can be done over the existing Wifi connection or maybe even ethernet/usb from the Pi directly.
-The main motivation for this is to avoid overloading the print harder causing MCU timeout issues. Additionally it makes it easier to install various services since it's a common Linux distribution.
+The main motivation for this is to avoid overloading the printer hardware causing MCU timeout issues. Additionally it makes it easier to install various services since it's a common Linux distribution.
 
 
 
@@ -77,11 +77,38 @@ sudo reboot
 
 
 
+## Printer Setup
+The `./rinkhals` directory can be copied to the printer under `/useremain/rinkhals/somefoldername` and run as a version by changing `.version`.
+This should still offer some of the startup protections of Rinkhals but does away with most of the binary overlays. Cnfigurations are in an overlay so you can `.disable-rinkhals` to go back to a default printer setup.
+
+The `dropbear` binary have been patched to run with relative paths similar to what the various Rinkhals installer scripts do.
+```bash
+# Eg `/usr/libexec/sftp-server` changes to `.////////sftp-server`
+cat dropbear_original |
+    sed "s/\/lib\/ld-uClibc.so.0/.\/\/\/\/\/\/\/\/\/ld-uClibc/g" |
+    sed "s/\/usr\/libexec\/sftp-server/.\/\/\/\/\/\/\/\/sftp-server    /g" \
+    > dropbear
+
+cat sftp-server_original |
+    sed "s/\/lib\/ld-uClibc.so.0/.\/\/\/\/\/\/\/\/\/ld-uClibc/g" \
+    > sftp-server
+
+```
+
+The above should get you:
+- An SSH server on port 22 with SFTP support
+- The Klipper unix socket forwarded to `localhost:7126`
+
+
+
+
+
 ## Direct ethernet setup
 This requires setting up ethernet drivers on the printer.
 ```
 sudo nmcli con add con-name 'printerconnect' ifname eth0 type ethernet ip4 169.254.5.2/16 ipv4.method 'manual' connection.autoconnect yes
 ```
+
 
 
 
