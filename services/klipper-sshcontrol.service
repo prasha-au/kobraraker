@@ -4,10 +4,10 @@ Requires=network-online.target
 After=network-online.target
 
 [Service]
-User=printerpi
-Group=printerpi
+User=radxa
+Group=radxa
 
-ExecStart=sshpass -p rockchip ssh -N printer
+ExecStart=sshpass -p rockchip ssh -v -N -L 7126:localhost:7126 printer
 
 Restart=always
 RestartSec=5s

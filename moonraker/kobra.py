@@ -212,9 +212,9 @@ class Kobra:
                 rpc_method = web_request.get_endpoint()
                 if rpc_method == "gcode/script":
                     script = web_request.get_str('script', "")
-                    if script.lower() == "bed_mesh_map" and os.path.isfile("/home/printerpi/printer_data/config/printer_mutable.cfg"):
+                    if script.lower() == "bed_mesh_map" and os.path.isfile("/home/radxa/printer_data/config/printer_mutable.cfg"):
                         logging.info('[Kobra] Injected bed mesh')
-                        with open("/home/printerpi/printer_data/config/printer_mutable.cfg", "r") as f:
+                        with open("/home/radxa/printer_data/config/printer_mutable.cfg", "r") as f:
                             config = json.load(f)
                             mesh = config.get("bed_mesh default")
                             if not mesh is None:
@@ -235,6 +235,14 @@ class Kobra:
                             message = 'GoKlipper only support one default bed mesh'
                             logging.error(message)
                             raise self.server.error(message)
+
+                    if script.lower() == 'help':
+                        web_request.endpoint = 'gcode/help'
+                        result = await original_request(me, web_request)
+                        result = '\n'.join([ f'// {g}: {result[g]}' for g in result ])
+                        self.server.send_event("server:gcode_response", result)
+                        return None
+
                 return await original_request(me, web_request)
             return request
 
@@ -244,11 +252,10 @@ class Kobra:
 
                 # Do not send bed_mesh to goklipper, it does not support it
                 want_bed_mesh = False
-                if 'objects' in args and 'bed_mesh' in args['objects']:
+                if 'objects' in args and ('bed_mesh' in args['objects'] or 'bed_mesh default' in args['objects'] or 'bed_mesh \"default\"' in args['objects']):
                     want_bed_mesh = True
                     del args['objects']['bed_mesh']
-                if 'objects' in args and 'bed_mesh \"default\"' in args['objects']:
-                    want_bed_mesh = True
+                    del args['objects']['bed_mesh default']
                     del args['objects']['bed_mesh \"default\"']
 
                 result = await original__request_standard(me, web_request, timeout)
@@ -259,10 +266,11 @@ class Kobra:
                         result['status'] = {}
 
                     result['status']['bed_mesh'] = {}
+                    result['status']['bed_mesh default'] = {}
                     result['status']['bed_mesh \"default\"'] = {}
 
-                    if os.path.isfile("/home/printerpi/printer_data/config/printer_mutable.cfg"):
-                        with open('/home/printerpi/printer_data/config/printer_mutable.cfg', 'r') as f:
+                    if os.path.isfile("/home/radxa/printer_data/config/printer_mutable.cfg"):
+                        with open('/home/radxa/printer_data/config/printer_mutable.cfg', 'r') as f:
                             config = json.load(f)
                             mesh = config.get('bed_mesh default')
                             if not mesh is None:
@@ -275,7 +283,7 @@ class Kobra:
                                     "probed_matrix": points,
                                     "mesh_matrix": points
                                 }
-                                result['status']['bed_mesh \"default\"'] = {
+                                result['status']['bed_mesh default'] = {
                                     "points": points,
                                     "mesh_params": {
                                         "min_x": float(mesh["min_x"]),
@@ -311,40 +319,44 @@ class Kobra:
                 rpc_method = web_request.get_endpoint()
                 if rpc_method == "objects/list":
                     logging.info('[Kobra] Injected objects list')
-                    return {
-                        "objects": [
-                            "motion_report",
-                            "gcode_macro pause",
-                            "gcode_macro resume",
-                            "gcode_macro cancel_print",
-                            "gcode_macro t0",
-                            "gcode_macro t1",
-                            "gcode_macro t2",
-                            "gcode_macro t3",
-                            "configfile",
-                            "heaters",
-                            "respond",
-                            "display_status",
-                            "extruder",
-                            "fan",
-                            "gcode_move",
-                            "heater_bed",
-                            "mcu",
-                            "mcu nozzle_mcu",
-                            "ota_filament_hub",
-                            "pause_resume",
-                            "pause_resume/cancel",
-                            "print_stats",
-                            "toolhead",
-                            "verify_heater extrude",
-                            "verify_heater heater_bed",
-                            "virtual_sdcard",
-                            "webhooks",
-                            "bed_mesh",
-                            "bed_mesh \"default\"",
-                            "idle_timeout"
-                        ]
-                    }
+
+                    objects = [
+                        "motion_report",
+                        "gcode_macro t0",
+                        "gcode_macro t1",
+                        "gcode_macro t2",
+                        "gcode_macro t3",
+                        "configfile",
+                        "heaters",
+                        "respond",
+                        "display_status",
+                        "extruder",
+                        "fan",
+                        "gcode_move",
+                        "heater_bed",
+                        "mcu",
+                        "mcu nozzle_mcu",
+                        "ota_filament_hub",
+                        "pause_resume",
+                        "pause_resume/cancel",
+                        "print_stats",
+                        "toolhead",
+                        "verify_heater extrude",
+                        "verify_heater heater_bed",
+                        "virtual_sdcard",
+                        "webhooks",
+                        "bed_mesh",
+                        "bed_mesh default",
+                        "bed_mesh \"default\"",
+                        "idle_timeout"
+                    ]
+
+                    web_request.endpoint = 'gcode/help'
+                    result = await original_request(me, web_request)
+                    for gcode in result:
+                        objects.append(f"gcode_macro {gcode}")
+
+                    return { "objects": objects }
                 return await original_request(me, web_request)
             return request
 
