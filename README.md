@@ -79,8 +79,11 @@ sudo reboot
 
 ## Printer Setup
 The `./rinkhals` directory can be copied to the printer under `/useremain/rinkhals/somefoldername` and run as a version by changing `.version`.
-This should still offer some of the startup protections of Rinkhals but does away with most of the binary overlays. Cnfigurations are in an overlay so you can `.disable-rinkhals` to go back to a default printer setup.
+This should still offer some of the startup protections of Rinkhals but does away with most of the binary overlays. Configurations are in an overlay so you can `.disable-rinkhals` to go back to a default printer setup.
 
+
+(PATCHED SSH FOR RELATIVE PATHS DOES NOT WORK YET)
+<!--
 The `dropbear` binary have been patched to run with relative paths similar to what the various Rinkhals installer scripts do.
 ```bash
 # Eg `/usr/libexec/sftp-server` changes to `.////////sftp-server`
@@ -94,6 +97,7 @@ cat sftp-server_original |
     > sftp-server
 
 ```
+ -->
 
 The above should get you:
 - An SSH server on port 22 with SFTP support
