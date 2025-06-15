@@ -4,12 +4,12 @@ After=network.target klipper-socket-local.service klipper-fsmount.service
 
 [Service]
 Type=simple
-User=printerpi
-Group=printerpi
+User=radxa
+Group=radxa
 Restart=always
 RestartSec=10
-WorkingDirectory=/home/printerpi
-ExecStart=/home/printerpi/venv/bin/python /home/printerpi/moonraker/moonraker/moonraker.py -d /home/printerpi/printer_data
+WorkingDirectory=/home/radxa
+ExecStart=/home/radxa/moonraker-env/bin/python /home/radxa/moonraker/moonraker/moonraker.py -d /home/radxa/printer_data
 
 [Install]
 WantedBy=multi-user.target
