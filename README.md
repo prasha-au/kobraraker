@@ -81,30 +81,11 @@ sudo reboot
 The `./rinkhals` directory can be copied to the printer under `/useremain/rinkhals/somefoldername` and run as a version by changing `.version`.
 This should still offer some of the startup protections of Rinkhals but does away with most of the binary overlays. Configurations are in an overlay so you can `.disable-rinkhals` to go back to a default printer setup.
 
-
-(PATCHED SSH FOR RELATIVE PATHS DOES NOT WORK YET)
-<!--
-The `dropbear` binary have been patched to run with relative paths similar to what the various Rinkhals installer scripts do.
-```bash
-# Eg `/usr/libexec/sftp-server` changes to `.////////sftp-server`
-cat dropbear_original |
-    sed "s/\/lib\/ld-uClibc.so.0/.\/\/\/\/\/\/\/\/\/ld-uClibc/g" |
-    sed "s/\/usr\/libexec\/sftp-server/.\/\/\/\/\/\/\/\/sftp-server    /g" \
-    > dropbear
-
-cat sftp-server_original |
-    sed "s/\/lib\/ld-uClibc.so.0/.\/\/\/\/\/\/\/\/\/ld-uClibc/g" \
-    > sftp-server
-
-```
- -->
+The default SSH binaries from the Rinkhals project's ssh tools are used and copied to the `/tmp/ssh` folder due to hard coded paths in the binary.
 
 The above should get you:
 - An SSH server on port 22 with SFTP support
 - The Klipper unix socket forwarded to `localhost:7126`
-
-
-
 
 
 ## Direct ethernet setup
