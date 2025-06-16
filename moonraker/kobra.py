@@ -3,8 +3,6 @@ import json
 import re
 import logging
 import subprocess
-import time
-import sys
 
 from ..utils import Sentinel
 from .power import PowerDevice
@@ -69,7 +67,7 @@ class Kobra:
                 status['print_stats']['filename'] = status['print_stats']['filename'].replace('/useremain/app/gk/gcodes/', '')
 
             # save filament usage for motion_report
-            if 'filament_used' in status['print_stats'] and 'print_duration' in status['print_stats']
+            if 'filament_used' in status['print_stats'] and 'print_duration' in status['print_stats']:
                 if self._filament_used_last_value is not None:
                     filament_used = status['print_stats']['filament_used'] - self._filament_used_last_value[0]
                     elapsed_time = status['print_stats']['print_duration'] - self._filament_used_last_value[1]
