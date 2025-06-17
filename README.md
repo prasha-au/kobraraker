@@ -75,6 +75,13 @@ ln -s $HOME/mounted_logs $HOME/printer_data/logs/mounted_logs
 sudo reboot
 ```
 
+## Other changes for Debian
+```bash
+# USB autosuspend causes havoc with some webcams on resume
+echo -1 > /sys/module/usbcore/parameters/autosuspend
+# Disable wifi power saving to avoid losing connection
+nmcli con mod <connection_name> 802-11-wireless.powersave 2
+```
 
 
 ## Printer Setup
