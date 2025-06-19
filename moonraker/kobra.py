@@ -49,6 +49,9 @@ class Kobra:
                     state = 'printing'
                 if state.lower() == 'onpause':
                     state = 'paused'
+                # Moonraker does an "is not" comparison in job_state.py resulting in double job start events. This ensures the static memory location is returned.
+                if state.lower() == 'printing':
+                    state = 'printing'
 
                 status['print_stats']['state'] = state
 
