@@ -96,12 +96,10 @@ The above should get you:
 
 
 ## Direct ethernet setup
-This requires setting up ethernet drivers on the printer.
-```
+This requires setting up the ethernet drivers on the printer (see [this file](./rinkhals/ethernet.sh)) and then adding the required configuration via nmcli. The USB ID of the ethernet dongle will have to be changed in the script and compatible drivers loaded.
+```bash
 sudo nmcli con add con-name 'printerconnect' ifname eth0 type ethernet ip4 169.254.5.2/16 ipv4.method 'manual' connection.autoconnect yes
 ```
-
-
 
 
 ## References
