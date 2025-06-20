@@ -145,10 +145,8 @@ fi
 
 
 ###############
-# log "> Starting ethernet..."
-# insmod $RINKHALS_ROOT/bin/usbnet.ko
-# insmod $RINKHALS_ROOT/bin/asix.ko
-# ifconfig eth1 169.254.5.1 up
+log "> Starting ethernet..."
+sh $RINKHALS_ROOT/ethernet.sh >> $RINKHALS_ROOT/logs/ethernet.log 2>&1 &
 
 
 cd $RINKHALS_ROOT
