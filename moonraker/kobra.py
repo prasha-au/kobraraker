@@ -12,6 +12,11 @@ class Kobra:
 
     _total_layer = 0
 
+    _speed_factor = 1.0
+    _speed_last_value = 0
+    _filament_used_last_value = None
+    _filament_used_rate = 0.0
+
     def __init__(self, config):
         self.server = config.get_server()
         self.power = self.server.load_component(self.server.config, 'power')
@@ -39,7 +44,6 @@ class Kobra:
             if 'state' in status['print_stats']:
                 # Convert Kobra state
                 state = status['print_stats']['state']
-                logging.info(f'[Kobra] Converted Kobra state {state}')
 
                 if state.lower() == 'heating':
                     state = 'printing'
@@ -65,6 +69,16 @@ class Kobra:
                 # Remove path prefix from filename
                 status['print_stats']['filename'] = status['print_stats']['filename'].replace('/useremain/app/gk/gcodes/', '')
 
+            # save filament usage for motion_report
+            if 'filament_used' in status['print_stats'] and 'print_duration' in status['print_stats']:
+                if self._filament_used_last_value is not None:
+                    filament_used = status['print_stats']['filament_used'] - self._filament_used_last_value[0]
+                    elapsed_time = status['print_stats']['print_duration'] - self._filament_used_last_value[1]
+                    if elapsed_time > 0:
+                        self._filament_used_rate = filament_used / elapsed_time
+
+                self._filament_used_last_value = (status['print_stats']['filament_used'], status['print_stats']['print_duration'])
+
         if 'virtual_sdcard' in status:
             if 'total_layer' in status['virtual_sdcard']:
                 # Save layer count for later
@@ -85,6 +99,18 @@ class Kobra:
             if 'file_path' in status['virtual_sdcard']:
                 # Remove path prefix from file path
                 status['virtual_sdcard']['file_path'] = status['virtual_sdcard']['file_path'].replace('/useremain/app/gk/gcodes/', '')
+
+        if 'gcode_move' in status:
+            if 'speed_factor' in status['gcode_move']:
+                self._speed_factor = status['gcode_move']['speed_factor']
+
+            if 'speed' in status['gcode_move']:
+                self._speed_last_value = status['gcode_move']['speed']
+
+            status['motion_report'] = {}
+            status['motion_report']['live_position'] = status['gcode_move'].get('position', [0, 0, 0])
+            status['motion_report']['live_velocity'] = round(self._speed_last_value / 100 * self._speed_factor)
+            status['motion_report']['live_extruder_velocity'] = self._filament_used_rate
 
         return status
 
