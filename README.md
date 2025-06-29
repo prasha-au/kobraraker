@@ -67,8 +67,7 @@ sudo systemctl enable --now $HOME/kobraraker/services/moonraker.service
 
 # Link in printer config files and logs
 ln -s $HOME/mounted_printer_data/config/printer_mutable.cfg $HOME/printer_data/config/
-ln -s $HOME/mounted_printer_data/config/printer.custom.cfg $HOME/printer_data/config/
-ln -s $HOME/mounted_printer_data/config/printer.generated.cfg $HOME/printer_data/config/
+ln -s $HOME/mounted_printer_data/config/printer.kobraraker.cfg $HOME/printer_data/config/
 ln -s $HOME/mounted_logs $HOME/printer_data/logs/mounted_logs
 
 # Either reboot or start the services manually
