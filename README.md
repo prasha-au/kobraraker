@@ -89,6 +89,8 @@ This should still offer some of the startup protections of Rinkhals but does awa
 
 The default SSH binaries from the Rinkhals project's ssh tools are used and copied to the `/tmp/ssh` folder due to hard coded paths in the binary.
 
+The default stock configuration file is left intact and we use a `printer.kobraraker.cfg` file instead. Copy `/userdata/app/gk/printer.cfg` and make the necessary changes (like Moonraker macros). If the file is not found the default should be copied on bootup.
+
 The above should get you:
 - An SSH server on port 22 with SFTP support
 - The Klipper unix socket forwarded to `localhost:7126`
