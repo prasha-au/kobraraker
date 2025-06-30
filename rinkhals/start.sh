@@ -94,10 +94,18 @@ mkdir -p /userdata/app/gk/printer_data/gcodes
 umount -l /userdata/app/gk/printer_data/gcodes 2> /dev/null
 mount --bind /useremain/app/gk/gcodes /userdata/app/gk/printer_data/gcodes
 
-if [ -f /mnt/udisk/printer.generated.cfg ]; then
-    cp /userdata/app/gk/printer_data/config/printer.generated.cfg /userdata/app/gk/printer_data/config/printer.generated.cfg.bak
-    rm /userdata/app/gk/printer_data/config/printer.generated.cfg
-    cp /mnt/udisk/printer.generated.cfg /userdata/app/gk/printer_data/config/printer.generated.cfg
+CFG_PATH="/userdata/app/gk/printer_data/config/printer.kobraraker.cfg"
+STOCK_CFG_PATH="/userdata/app/gk/printer.cfg"
+
+if [ -f /mnt/udisk/printer.kobraraker.cfg ]; then
+    cp $CFG_PATH ${CFG_PATH}.bak
+    rm $CFG_PATH
+    cp /mnt/udisk/printer.kobraraker.cfg $CFG_PATH
+fi
+
+if [ ! -f $CFG_PATH ]; then
+    log "> printer.kobraraker.cfg not found, copying from $STOCK_CFG_PATH"
+    cp $STOCK_CFG_PATH $CFG_PATH
 fi
 
 
@@ -109,7 +117,7 @@ cd /userdata/app/gk/
 export USE_MUTABLE_CONFIG=1
 export LD_LIBRARY_PATH=/userdata/app/gk:$LD_LIBRARY_PATH
 
-./gklib -a /tmp/unix_uds1 /userdata/app/gk/printer_data/config/printer.generated.cfg &> $RINKHALS_ROOT/logs/gklib.log &
+./gklib -a /tmp/unix_uds1 $CFG_PATH &> $RINKHALS_ROOT/logs/gklib.log &
 ./gkapi &> $RINKHALS_ROOT/logs/gkapi.log &
 ./K3SysUi &> $RINKHALS_ROOT/logs/gkui.log &
 

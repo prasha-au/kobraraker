@@ -67,8 +67,7 @@ sudo systemctl enable --now $HOME/kobraraker/services/moonraker.service
 
 # Link in printer config files and logs
 ln -s $HOME/mounted_printer_data/config/printer_mutable.cfg $HOME/printer_data/config/
-ln -s $HOME/mounted_printer_data/config/printer.custom.cfg $HOME/printer_data/config/
-ln -s $HOME/mounted_printer_data/config/printer.generated.cfg $HOME/printer_data/config/
+ln -s $HOME/mounted_printer_data/config/printer.kobraraker.cfg $HOME/printer_data/config/
 ln -s $HOME/mounted_logs $HOME/printer_data/logs/mounted_logs
 
 # Either reboot or start the services manually
@@ -89,6 +88,8 @@ The `./rinkhals` directory can be copied to the printer under `/useremain/rinkha
 This should still offer some of the startup protections of Rinkhals but does away with most of the binary overlays. Configurations are in an overlay so you can `.disable-rinkhals` to go back to a default printer setup.
 
 The default SSH binaries from the Rinkhals project's ssh tools are used and copied to the `/tmp/ssh` folder due to hard coded paths in the binary.
+
+The default stock configuration file is left intact and we use a `printer.kobraraker.cfg` file instead. Copy `/userdata/app/gk/printer.cfg` and make the necessary changes (like Moonraker macros). If the file is not found the default should be copied on bootup.
 
 The above should get you:
 - An SSH server on port 22 with SFTP support
