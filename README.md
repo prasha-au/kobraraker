@@ -67,14 +67,20 @@ sudo systemctl enable --now $HOME/kobraraker/services/moonraker.service
 
 # Link in printer config files and logs
 ln -s $HOME/mounted_printer_data/config/printer_mutable.cfg $HOME/printer_data/config/
-ln -s $HOME/mounted_printer_data/config/printer.custom.cfg $HOME/printer_data/config/
-ln -s $HOME/mounted_printer_data/config/printer.generated.cfg $HOME/printer_data/config/
+ln -s $HOME/mounted_printer_data/config/printer.kobraraker.cfg $HOME/printer_data/config/
 ln -s $HOME/mounted_logs $HOME/printer_data/logs/mounted_logs
 
 # Either reboot or start the services manually
 sudo reboot
 ```
 
+## Other changes for Debian
+```bash
+# USB autosuspend causes havoc with some webcams on resume
+echo -1 > /sys/module/usbcore/parameters/autosuspend
+# Disable wifi power saving to avoid losing connection
+nmcli con mod <connection_name> 802-11-wireless.powersave 2
+```
 
 
 ## Printer Setup
@@ -83,18 +89,18 @@ This should still offer some of the startup protections of Rinkhals but does awa
 
 The default SSH binaries from the Rinkhals project's ssh tools are used and copied to the `/tmp/ssh` folder due to hard coded paths in the binary.
 
+The default stock configuration file is left intact and we use a `printer.kobraraker.cfg` file instead. Copy `/userdata/app/gk/printer.cfg` and make the necessary changes (like Moonraker macros). If the file is not found the default should be copied on bootup.
+
 The above should get you:
 - An SSH server on port 22 with SFTP support
 - The Klipper unix socket forwarded to `localhost:7126`
 
 
 ## Direct ethernet setup
-This requires setting up ethernet drivers on the printer.
-```
+This requires setting up the ethernet drivers on the printer (see [this file](./rinkhals/ethernet.sh)) and then adding the required configuration via nmcli. The USB ID of the ethernet dongle will have to be changed in the script and compatible drivers loaded.
+```bash
 sudo nmcli con add con-name 'printerconnect' ifname eth0 type ethernet ip4 169.254.5.2/16 ipv4.method 'manual' connection.autoconnect yes
 ```
-
-
 
 
 ## References
