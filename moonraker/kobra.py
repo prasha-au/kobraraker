@@ -112,7 +112,7 @@ class Kobra:
 
             status['motion_report'] = {}
             status['motion_report']['live_position'] = status['gcode_move'].get('position', [0, 0, 0])
-            status['motion_report']['live_velocity'] = round(self._speed_last_value / 100 * self._speed_factor)
+            status['motion_report']['live_velocity'] = round(self._speed_last_value / 60 * self._speed_factor)
             status['motion_report']['live_extruder_velocity'] = self._filament_used_rate
 
         return status
