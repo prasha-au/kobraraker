@@ -11,6 +11,7 @@ from .power import PowerDevice
 class Kobra:
 
     _total_layer = 0
+    _states_cache = []
 
     def __init__(self, config):
         self.server = config.get_server()
@@ -49,9 +50,11 @@ class Kobra:
                     state = 'printing'
                 if state.lower() == 'onpause':
                     state = 'paused'
-                # Moonraker does an "is not" comparison in job_state.py resulting in double job start events. This ensures the static memory location is returned.
-                if state.lower() == 'printing':
-                    state = 'printing'
+
+                # Ensures same string memory location for Moonraker job_state check (https://github.com/jbatonnet/Rinkhals/issues/118#issuecomment-2980916709)
+                if state not in self._states_cache:
+                    self._states_cache.append(state)
+                state = [ s for s in self._states_cache if s == state ][0]
 
                 status['print_stats']['state'] = state
 
@@ -257,9 +260,12 @@ class Kobra:
                 want_bed_mesh = False
                 if 'objects' in args and ('bed_mesh' in args['objects'] or 'bed_mesh default' in args['objects'] or 'bed_mesh \"default\"' in args['objects']):
                     want_bed_mesh = True
-                    del args['objects']['bed_mesh']
-                    del args['objects']['bed_mesh default']
-                    del args['objects']['bed_mesh \"default\"']
+                    if 'bed_mesh' in args['objects']:
+                        del args['objects']['bed_mesh']
+                    if 'bed_mesh default' in args['objects']:
+                        del args['objects']['bed_mesh default']
+                    if 'bed_mesh \"default\"' in args['objects']:
+                        del args['objects']['bed_mesh \"default\"']
 
                 result = await original__request_standard(me, web_request, timeout)
 
